@@ -2,7 +2,7 @@
 
 import numpy as np
 
-LABELS = [chr(i) for i in range(ord('A'), ord('Z') + 1)]
+LABELS = ['A','B','C','D','E','F','G','H','I','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y']
 
 class GesturePredictor:
     def __init__(self, model_path):

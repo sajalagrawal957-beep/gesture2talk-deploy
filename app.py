@@ -42,8 +42,8 @@ def predict():
 
     landmarks = data['landmarks']
 
-    if len(landmarks) != 63:
-        return jsonify({"error": f"Expected 63 landmarks, got {len(landmarks)}"}), 400
+    if len(landmarks) != 42:
+        return jsonify({"error": f"Expected 42 landmarks, got {len(landmarks)}"}), 400
 
     if predictor:
         letter, confidence = predictor.predict(landmarks)
