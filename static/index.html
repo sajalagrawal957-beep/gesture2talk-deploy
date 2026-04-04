@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Gesture2Talk</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
+<style>
+
+:root {
+    --green: #00ffc3;
+    --green2: #00ff88;
+    --dark: #050510;
+    --dark2: #0b0f2a;
+    --card: rgba(255,255,255,0.04);
+    --border: rgba(0,255,195,0.2);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: 'Rajdhani', sans-serif;
+    background: linear-gradient(135deg, var(--dark), var(--dark2));
+    color: white;
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(0,255,195,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,255,195,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+#landing {
+    position: relative;
+    z-index: 1;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#landing::after {
+    content: '';
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(0,255,195,0.08) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.landing-box {
+    position: relative;
+    z-index: 2;
+    background: rgba(0,255,195,0.04);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 60px 80px;
+    text-align: center;
+    box-shadow: 0 0 60px rgba(0,255,195,0.08), inset 0 0 40px rgba(0,255,195,0.03);
+    backdrop-filter: blur(10px);
+    min-width: 480px;
+    animation: fadeIn 0.8s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.logo-img {
+    width: 110px;
+    height: 110px;
+    object-fit: contain;
+    margin-bottom: 20px;
+    filter: drop-shadow(0 0 20px rgba(0,255,195,0.5));
+    animation: pulse 2s ease-in-out infinite;
+    border-radius: 16px;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50%       { transform: scale(1.06); }
+}
+
+.landing-box h1 {
+    font-family: 'Orbitron', monospace;
+    font-size: 42px;
+    font-weight: 900;
+    color: var(--green);
+    text-shadow: 0 0 30px var(--green);
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+}
+
+.landing-box p {
+    font-size: 16px;
+    color: rgba(255,255,255,0.6);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 40px;
+}
+
+.start-btn {
+    padding: 16px 48px;
+    font-size: 17px;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    border: none;
+    border-radius: 50px;
+    background: linear-gradient(135deg, var(--green2), var(--green));
+    color: #050510;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 0 30px rgba(0,255,136,0.4);
+}
+
+.start-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 50px rgba(0,255,136,0.6);
+}
+
+.tagline {
+    margin-top: 28px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 1px;
+}
+
+#app {
+    display: none;
+    position: relative;
+    z-index: 1;
+    height: 100vh;
+    flex-direction: column;
+}
+
+header {
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(0,255,195,0.03);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.header-logo {
+    width: 38px;
+    height: 38px;
+    object-fit: contain;
+    border-radius: 8px;
+    filter: drop-shadow(0 0 8px rgba(0,255,195,0.5));
+}
+
+.header-text { text-align: left; }
+
+header h1 {
+    font-family: 'Orbitron', monospace;
+    font-size: 22px;
+    color: var(--green);
+    text-shadow: 0 0 15px var(--green);
+    letter-spacing: 2px;
+}
+
+header p {
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+}
+
+.container {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+.left { width: 58%; padding: 15px; }
+
+.camera-box {
+    height: 100%;
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+    border: 2px solid #ff3333;
+    transition: border-color 0.4s, box-shadow 0.4s;
+    background: #000;
+}
+
+.camera-box.detected {
+    border-color: var(--green2);
+    box-shadow: 0 0 25px rgba(0,255,136,0.4);
+}
+
+.cam-label {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.7);
+    background: rgba(0,0,0,0.5);
+    padding: 4px 10px;
+    border-radius: 20px;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.rec-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ff3333;
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.2; }
+}
+
+video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scaleX(-1);
+}
+
+#overlayLetter {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Orbitron', monospace;
+    font-size: 90px;
+    font-weight: 900;
+    color: var(--green);
+    text-shadow: 0 0 30px var(--green);
+    transition: 0.15s;
+    z-index: 2;
+}
+
+.right {
+    width: 42%;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow-y: auto;
+}
+
+.card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 18px;
+}
+
+#currentLetter {
+    font-family: 'Orbitron', monospace;
+    font-size: 96px;
+    font-weight: 900;
+    text-align: center;
+    color: var(--green2);
+    text-shadow: 0 0 40px var(--green2);
+    line-height: 1;
+    padding: 10px 0;
+    transition: 0.15s;
+}
+
+.conf-label {
+    font-size: 13px;
+    letter-spacing: 1px;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+
+.bar {
+    height: 8px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--green2), var(--green));
+    border-radius: 10px;
+    transition: width 0.3s ease;
+    box-shadow: 0 0 10px rgba(0,255,136,0.5);
+}
+
+.sentence-label {
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    margin-bottom: 8px;
+}
+
+#sentenceText {
+    font-size: 22px;
+    font-weight: 600;
+    color: white;
+    min-height: 32px;
+    word-break: break-all;
+}
+
+.suggestions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.suggestions button {
+    padding: 7px 16px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: rgba(0,255,195,0.08);
+    color: var(--green);
+    cursor: pointer;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+}
+
+.suggestions button:hover {
+    background: rgba(0,255,195,0.2);
+    box-shadow: 0 0 12px rgba(0,255,195,0.3);
+}
+
+.buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-top: auto;
+}
+
+.btn {
+    padding: 13px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: all 0.2s;
+}
+
+.btn:hover  { transform: scale(1.03); filter: brightness(1.15); }
+.btn:active { transform: scale(0.97); }
+
+.speak   { background: var(--green2); color: #050510; box-shadow: 0 0 20px rgba(0,255,136,0.3); }
+.back    { background: #ff8800; color: #050510; }
+.clear   { background: #ff3333; color: white; }
+.history { background: #444; color: white; }
+
+#historyPanel {
+    display: none;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 18px;
+    max-height: 140px;
+    overflow-y: auto;
+}
+
+#historyPanel h3 {
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    margin-bottom: 10px;
+}
+
+.history-item {
+    font-size: 14px;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    color: rgba(255,255,255,0.8);
+}
+
+</style>
+</head>
+<body>
+
+<!-- LANDING -->
+<div id="landing">
+    <div class="landing-box">
+        <img src="visionvoice.jpeg" alt="VisionVoice Logo" class="logo-img">
+        <h1>Gesture2Talk</h1>
+        <p>Real-time Sign Language Translator</p>
+        <button class="start-btn" onclick="startApp()">▶ Start Camera</button>
+        <div class="tagline">Bridging the gap — one gesture at a time</div>
+    </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+
+    <header>
+        <img src="visionvoice.jpeg" alt="Logo" class="header-logo">
+        <div class="header-text">
+            <h1>Gesture2Talk</h1>
+            <p>Real-time Sign Language Translator</p>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <div class="left">
+            <div class="camera-box" id="camBox">
+                <div class="cam-label"><span class="rec-dot"></span> Camera Feed</div>
+                <video id="video" autoplay playsinline></video>
+                <div id="overlayLetter">—</div>
+            </div>
+        </div>
+
+        <div class="right">
+
+            <div class="card">
+                <div class="conf-label">Detected Letter</div>
+                <div id="currentLetter">—</div>
+            </div>
+
+            <div class="card">
+                <div class="conf-label" id="confText">Confidence: 0%</div>
+                <div class="bar"><div class="fill" id="confFill"></div></div>
+            </div>
+
+            <div class="card">
+                <div class="sentence-label">Sentence</div>
+                <div id="sentenceText"></div>
+            </div>
+
+            <div class="card">
+                <div class="sentence-label">Quick Words</div>
+                <div class="suggestions">
+                    <button onclick="speakWord('HELLO')">HELLO</button>
+                    <button onclick="speakWord('HELP')">HELP</button>
+                    <button onclick="speakWord('THANKS')">THANKS</button>
+                </div>
+            </div>
+
+            <div id="historyPanel">
+                <h3>📜 History</h3>
+                <div id="historyList"></div>
+            </div>
+
+            <div class="buttons">
+                <button class="btn speak"   onclick="speak()">🎤 Speak</button>
+                <button class="btn back"    onclick="doBackspace()">⬅ Back</button>
+                <button class="btn clear"   onclick="doClear()">🗑 Clear</button>
+                <button class="btn history" onclick="toggleHistory()">📜 History</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+
+<script>
+const BASE = "http://127.0.0.1:5000";
+
+function startApp() {
+    document.getElementById("landing").style.display = "none";
+    document.getElementById("app").style.display = "flex";
+    startMediaPipe();
+}
+
+function startMediaPipe() {
+    const videoEl = document.getElementById("video");
+
+    const hands = new Hands({
+        locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+    });
+
+    hands.setOptions({
+        maxNumHands: 1,
+        modelComplexity: 1,
+        minDetectionConfidence: 0.7,
+        minTrackingConfidence: 0.7
+    });
+
+    hands.onResults(onResults);
+
+    const camera = new Camera(videoEl, {
+        onFrame: async () => { await hands.send({ image: videoEl }); },
+        width: 640,
+        height: 480
+    });
+
+    camera.start();
+}
+
+async function onResults(results) {
+    if (!results.multiHandLandmarks || results.multiHandLandmarks.length === 0) {
+        document.getElementById("camBox").classList.remove("detected");
+        return;
+    }
+
+    const raw = results.multiHandLandmarks[0];
+
+    // Extract x, y only (42 values)
+    let landmarks = [];
+    for (const lm of raw) {
+        landmarks.push(lm.x);
+        landmarks.push(lm.y);
+    }
+
+    // Normalize exactly like training did
+    const wristX = landmarks[0];
+    const wristY = landmarks[1];
+
+    // Subtract wrist position
+    for (let i = 0; i < landmarks.length; i += 2) {
+        landmarks[i]     -= wristX;
+        landmarks[i + 1] -= wristY;
+    }
+
+    // Find max absolute value
+    let maxVal = 0;
+    for (let v of landmarks) {
+        if (Math.abs(v) > maxVal) maxVal = Math.abs(v);
+    }
+
+    // Divide by max to normalize
+    landmarks = landmarks.map(v => v / (maxVal + 1e-6));
+
+    try {
+        let res = await fetch(BASE + "/predict", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ landmarks: landmarks })
+        });
+        let data = await res.json();
+
+        let letter = data.letter || "—";
+        document.getElementById("overlayLetter").innerText = letter;
+        document.getElementById("currentLetter").innerText = letter;
+
+        let conf = Math.round((data.confidence || 0) * 100);
+        document.getElementById("confText").innerText = "Confidence: " + conf + "%";
+        document.getElementById("confFill").style.width = conf + "%";
+        document.getElementById("sentenceText").innerText = data.sentence || "";
+
+        document.getElementById("camBox").classList.add("detected");
+    } catch(e) {}
+}
+
+async function speak() {
+    let text = document.getElementById("sentenceText").innerText;
+    if (!text) { alert("do some gestures"); return; }
+    
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 0.9;
+    utterance.volume = 1;
+    window.speechSynthesis.speak(utterance);
+}
+
+async function doBackspace() {
+    let res = await fetch(BASE + "/sentence/backspace", { method: "POST" });
+    let data = await res.json();
+    document.getElementById("sentenceText").innerText = data.sentence || "";
+}
+
+async function doClear() {
+    let res = await fetch(BASE + "/sentence/clear", { method: "POST" });
+    let data = await res.json();
+    document.getElementById("sentenceText").innerText = data.sentence || "";
+    document.getElementById("overlayLetter").innerText = "—";
+    document.getElementById("currentLetter").innerText = "—";
+    document.getElementById("confFill").style.width = "0%";
+    document.getElementById("confText").innerText = "Confidence: 0%";
+}
+
+async function toggleHistory() {
+    let panel = document.getElementById("historyPanel");
+    if (panel.style.display === "block") {
+        panel.style.display = "none";
+        return;
+    }
+    let res = await fetch(BASE + "/history");
+    let data = await res.json();
+    let list = document.getElementById("historyList");
+    list.innerHTML = "";
+    if (data.history && data.history.length > 0) {
+        data.history.forEach(item => {
+            let div = document.createElement("div");
+            div.className = "history-item";
+            div.innerText = "🗨 " + item;
+            list.appendChild(div);
+        });
+    } else {
+        list.innerHTML = '<div class="history-item">No history yet</div>';
+    }
+    panel.style.display = "block";
+}
+
+async function speakWord(word) {
+    await fetch(BASE + "/speak", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: word })
+    });
+}
+</script>
+</body>
+</html>
